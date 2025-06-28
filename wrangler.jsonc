@@ -21,6 +21,10 @@
 			"name": "hello-containers"
 		}
 	],
+	"assets": {
+		"directory": "./public",
+		"binding": "ASSETS"
+	},
 	"durable_objects": {
 		"bindings": [
 			{

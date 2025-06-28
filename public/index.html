@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PHP Code Editor</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/vs2015.min.css"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/php.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Consolas", "Monaco", "Courier New", monospace;
+        background: #1a1a1a;
+        color: #e0e0e0;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      .container {
+        display: flex;
+        height: 100vh;
+      }
+
+      .editor-panel {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        border-right: 2px solid #333;
+      }
+
+      .output-panel {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .panel-header {
+        background: #2d2d2d;
+        padding: 12px 16px;
+        border-bottom: 1px solid #404040;
+        font-weight: bold;
+        font-size: 14px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .run-button {
+        background: #4caf50;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: bold;
+        transition: background 0.2s;
+      }
+
+      .run-button:hover {
+        background: #45a049;
+      }
+
+      .run-button:disabled {
+        background: #666;
+        cursor: not-allowed;
+      }
+
+      .editor-container {
+        flex: 1;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .code-editor {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: transparent;
+        color: transparent;
+        caret-color: #d4d4d4;
+        border: none;
+        padding: 16px;
+        font-family: "Consolas", "Monaco", "Courier New", monospace;
+        font-size: 14px;
+        line-height: 1.5;
+        resize: none;
+        outline: none;
+        tab-size: 4;
+        z-index: 2;
+      }
+
+      .syntax-highlight {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        padding: 16px;
+        font-family: "Consolas", "Monaco", "Courier New", monospace;
+        font-size: 14px;
+        line-height: 1.5;
+        background: #1e1e1e;
+        color: #d4d4d4;
+        overflow: auto;
+        pointer-events: none;
+        z-index: 1;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+      }
+
+      .code-editor::placeholder {
+        color: #666;
+      }
+
+      /* Custom PHP syntax highlighting */
+      .hljs {
+        background: #1e1e1e !important;
+        color: #d4d4d4 !important;
+      }
+
+      .hljs-keyword {
+        color: #569cd6 !important;
+      }
+
+      .hljs-string {
+        color: #ce9178 !important;
+      }
+
+      .hljs-number {
+        color: #b5cea8 !important;
+      }
+
+      .hljs-comment {
+        color: #6a9955 !important;
+        font-style: italic;
+      }
+
+      .hljs-variable {
+        color: #9cdcfe !important;
+      }
+
+      .hljs-function {
+        color: #dcdcaa !important;
+      }
+
+      .hljs-class {
+        color: #4ec9b0 !important;
+      }
+
+      .hljs-tag {
+        color: #f92672 !important;
+      }
+
+      .hljs-punctuation {
+        color: #d4d4d4 !important;
+      }
+
+      .hljs-operator {
+        color: #d4d4d4 !important;
+      }
+
+      .output-content {
+        flex: 1;
+        background: #0d1117;
+        color: #c9d1d9;
+        padding: 16px;
+        overflow-y: auto;
+        white-space: pre-wrap;
+        font-family: "Consolas", "Monaco", "Courier New", monospace;
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      .output-content.loading {
+        color: #ffa500;
+      }
+
+      .output-content.error {
+        color: #ff6b6b;
+      }
+
+      .status-bar {
+        background: #252526;
+        padding: 6px 16px;
+        font-size: 12px;
+        color: #cccccc;
+        border-top: 1px solid #404040;
+      }
+
+      .execution-time {
+        color: #4caf50;
+        font-weight: bold;
+      }
+
+      /* Scrollbar styling */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: #2d2d2d;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: #555;
+        border-radius: 4px;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: #777;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="editor-panel">
+        <div class="panel-header">
+          PHP Code Editor
+          <button class="run-button" onclick="runCode()" id="runBtn">
+            Run Code
+          </button>
+        </div>
+        <div class="editor-container">
+          <div class="syntax-highlight" id="syntaxHighlight"></div>
+          <textarea
+            class="code-editor"
+            id="codeEditor"
+            placeholder="<?php
+// Write your PHP code here
+echo 'Hello, World!';
+?>"
+          ></textarea>
+        </div>
+        <div class="status-bar">Ready | Press Ctrl+Enter to run</div>
+      </div>
+
+      <div class="output-panel">
+        <div class="panel-header">
+          Output
+          <span id="executionTime" class="execution-time"></span>
+        </div>
+        <div class="output-content" id="output">Click "Run Code" to execute your PHP script...</div>
+      </div>
+    </div>
+
+    <script>
+      function updateSyntaxHighlighting() {
+        const codeEditor = document.getElementById("codeEditor");
+        const syntaxHighlight = document.getElementById("syntaxHighlight");
+
+        const code = codeEditor.value;
+        const highlighted = hljs.highlight(code, { language: "php" }).value;
+        syntaxHighlight.innerHTML = highlighted;
+
+        // Sync scroll position
+        syntaxHighlight.scrollTop = codeEditor.scrollTop;
+        syntaxHighlight.scrollLeft = codeEditor.scrollLeft;
+      }
+
+      async function runCode() {
+        const codeEditor = document.getElementById("codeEditor");
+        const output = document.getElementById("output");
+        const runBtn = document.getElementById("runBtn");
+        const executionTimeEl = document.getElementById("executionTime");
+
+        const code = codeEditor.value.trim();
+
+        if (!code) {
+          output.textContent = "Error: No code to execute";
+          output.className = "output-content error";
+          return;
+        }
+
+        // Disable button and show loading state
+        runBtn.disabled = true;
+        runBtn.textContent = "Running...";
+        output.textContent = "Executing code...";
+        output.className = "output-content loading";
+        executionTimeEl.textContent = "";
+
+        const startTime = Date.now();
+
+        try {
+          const response = await fetch(`/run`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "text/plain",
+            },
+            body: code,
+          });
+
+          const result = await response.text();
+          const executionTime = Date.now() - startTime;
+
+          if (response.ok) {
+            output.textContent = result || "(No output)";
+            output.className = "output-content";
+            executionTimeEl.textContent = `${executionTime}ms`;
+          } else {
+            output.textContent = `Error (${response.status}): ${result}`;
+            output.className = "output-content error";
+            executionTimeEl.textContent = "";
+          }
+        } catch (error) {
+          output.textContent = `Network Error: ${error.message}`;
+          output.className = "output-content error";
+          executionTimeEl.textContent = "";
+        } finally {
+          // Re-enable button
+          runBtn.disabled = false;
+          runBtn.textContent = "Run Code";
+        }
+      }
+
+      // Initialize syntax highlighting
+      document.addEventListener("DOMContentLoaded", function () {
+        hljs.highlightAll();
+        updateSyntaxHighlighting();
+      });
+
+      // Add event listeners for the code editor
+      document
+        .getElementById("codeEditor")
+        .addEventListener("input", updateSyntaxHighlighting);
+      document
+        .getElementById("codeEditor")
+        .addEventListener("scroll", function () {
+          const syntaxHighlight = document.getElementById("syntaxHighlight");
+          syntaxHighlight.scrollTop = this.scrollTop;
+          syntaxHighlight.scrollLeft = this.scrollLeft;
+        });
+
+      // Add keyboard shortcut (Ctrl+Enter)
+      document
+        .getElementById("codeEditor")
+        .addEventListener("keydown", function (e) {
+          if (e.ctrlKey && e.key === "Enter") {
+            e.preventDefault();
+            runCode();
+          }
+
+          // Handle tab for indentation
+          if (e.key === "Tab") {
+            e.preventDefault();
+            const start = this.selectionStart;
+            const end = this.selectionEnd;
+            const value = this.value;
+
+            this.value =
+              value.substring(0, start) + "    " + value.substring(end);
+            this.selectionStart = this.selectionEnd = start + 4;
+
+            // Update syntax highlighting after tab
+            setTimeout(updateSyntaxHighlighting, 0);
+          }
+        });
+
+      // Add some sample code on load
+      window.addEventListener("load", function () {
+        const codeEditor = document.getElementById("codeEditor");
+        codeEditor.value = `<?php
+// Sample PHP code
+echo "Hello, World!\\n";
+
+$numbers = [1, 2, 3, 4, 5];
+echo "Sum: " . array_sum($numbers) . "\\n";
+
+$date = date('Y-m-d H:i:s');
+echo "Current time: " . $date . "\\n";
+
+// Function example
+function greet($name) {
+    return "Hello, " . $name . "!";
+}
+
+echo greet("Developer") . "\\n";
+?>`;
+        updateSyntaxHighlighting();
+      });
+    </script>
+  </body>
+</html>
