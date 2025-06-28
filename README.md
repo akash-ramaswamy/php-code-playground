@@ -1,53 +1,26 @@
-# Containers Starter
+# PHP Sandbox Playground
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/cloudflare/templates/tree/main/containers-template)
+This project is an outcome of my love towards two things:
 
-![Containers Template Preview](https://imagedelivery.net/_yJ02hpOMj_EnGvsU2aygw/5aba1fb7-b937-46fd-fa67-138221082200/public)
+1. [Tehplayground](https://www.tehplayground.com/)
+2. [Cloudflare](https://developers.cloudflare.com/)
 
-<!-- dash-content-start -->
+Since the introduction of [Cloudflare Containers](https://developers.cloudflare.com/containers/), I was searching for a valid usecase. And as they mentioned about **Sandboxed environment**, immediate thing which striked my mind was Tehplayground. I love that tool and it is a crucial part of my workflow whenever I code in PHP.
 
-This is a [Container](https://developers.cloudflare.com/containers/) starter template.
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/akash-ramaswamy/php-code-playground)
 
-It demonstrates basic Container coniguration, launching and routing to individual container, load balancing over multiple container, running basic hooks on container status changes.
+![alt text](./docs/image.png)
 
-<!-- dash-content-end -->
-
-Outside of this repo, you can start a new project with this template using [C3](https://developers.cloudflare.com/pages/get-started/c3/) (the `create-cloudflare` CLI):
-
-```bash
-npm create cloudflare@latest -- --template=cloudflare/templates/containers-template
-```
 
 ## Getting Started
 
-First, run:
-
-```bash
-npm install
-# or
-yarn install
-# or
-pnpm install
-# or
-bun install
-```
-
-Then run the development server (using the package manager of your choice):
-
-```bash
-npm run dev
-```
+Clone this repo. Just run `npm install` followed by `npm run dev` in that directory. Thats it, your code runner is ready!
 
 Open [http://localhost:8787](http://localhost:8787) with your browser to see the result.
 
-You can start editing your Worker by modifying `src/index.ts` and you can start
-editing your Container by editing the content of `container_src`.
+## Deployment
 
-## Deploying To Production
-
-| Command          | Action                                |
-| :--------------- | :------------------------------------ |
-| `npm run deploy` | Deploy your application to Cloudflare |
+You may need a paid workers plan for deploying. If you already have one, just run `npm run deploy`.
 
 ## Learn More
 
